@@ -185,57 +185,71 @@ function renderBlocks(){
   const box=document.getElementById("blocks"); if(!box) return;
   if(!me){ box.innerHTML=`<p class="empty">👆 Escolha seu nome lá em cima para começar a apostar.</p>`; return; }
   const groups={};
-  gamesArr().forEach(g=>{ const k=blockKey(g); (groups[k]=groups[k]||{label:blockLabel(g),games:[]}).games.push(g); });
-  const keys=Object.keys(groups).sort();
+  gamesArr().forEach(g=>{ const k=blockKey(g); (groups[k]=groups[k]||{key:k,label:blockLabel(g),games:[]}).games.push(g); });
   const todayKey=new Intl.DateTimeFormat("en-CA",{timeZone:SP,year:"numeric",month:"2-digit",day:"2-digit"})
     .format(new Date(Date.now()-6*3600000));
+  const all=Object.values(groups);
+  const today=all.filter(b=>b.key===todayKey);
+  const future=all.filter(b=>b.key>todayKey).sort((a,b)=>a.key<b.key?-1:1);
+  const past=all.filter(b=>b.key<todayKey).sort((a,b)=>a.key<b.key?1:-1);
   box.innerHTML="";
-  keys.forEach(k=>{
-    const grp=groups[k];
-    const openCount=grp.games.filter(g=>!isLocked(g)).length;
-    const isToday=k===todayKey;
-    const collapsed = openCount===0 && !isToday;       // dias já fechados começam recolhidos
-    const det=document.createElement("section"); det.className="day"+(isToday?" today":"");
-    det.innerHTML=`
-      <button class="dayhead" data-k="${k}">
-        <span>${isToday?"📍 HOJE · ":""}${grp.label}</span>
-        <span class="daymeta">${openCount>0?`${openCount} aberto${openCount>1?"s":""}`:"fechado"} ${collapsed?"▸":"▾"}</span>
-      </button>
-      <div class="daybody" style="${collapsed?"display:none":""}">
-        ${grp.games.map(g=>gameCard(g)).join("")}
-        <button class="wa" data-share="${k}">📲 Enviar meus palpites deste dia no WhatsApp</button>
-      </div>`;
-    box.appendChild(det);
-  });
+  today.forEach(b=>box.appendChild(blockEl(b,true,true)));
+  future.forEach(b=>box.appendChild(blockEl(b,true,false)));
+  if(past.length){
+    const d=document.createElement("div"); d.className="pastdiv"; d.textContent="▾ Dias encerrados"; box.appendChild(d);
+    past.forEach(b=>box.appendChild(blockEl(b,false,false)));
+  }
+}
+function blockEl(b,expanded,isToday){
+  const openCount=b.games.filter(g=>!isLocked(g)).length;
+  const el=document.createElement("section"); el.className="day"+(isToday?" today":"")+(openCount>0?" hasopen":"");
+  el.innerHTML=`
+    <button class="dayhead" data-k="${b.key}">
+      <span>${isToday?"📍 HOJE · ":""}${b.label}</span>
+      <span class="daymeta">${openCount>0?`🟢 ${openCount} aberto${openCount>1?"s":""}`:"encerrado"} ${expanded?"▾":"▸"}</span>
+    </button>
+    <div class="daybody" style="${expanded?"":"display:none"}">
+      ${b.games.map(g=>gameCard(g)).join("")}
+      <button class="wa" data-share="${b.key}">📲 Enviar meus palpites deste dia no WhatsApp</button>
+    </div>`;
+  return el;
 }
 
 function gameCard(g){
   const locked=isLocked(g);
   const my=palpiteOf(g.id,me);
-  const v=getVal(g.id);
   const hasRes=g.ga!=null&&g.gb!=null;
   const pt=(my&&hasRes)?pts(my.casa,my.fora,g.ga,g.gb):null;
+  if(locked){
+    const badge = my
+      ? `<span class="badge sm ${pt!=null?'b'+pt:''}">${pt!=null?pt+" pts":"—"}</span>`
+      : `<span class="st-miss">não apostou</span>`;
+    return `
+     <div class="game locked compact" data-card="${g.id}">
+       <div class="cteams">${FLAG[g.casa]||""} ${g.casa} <b>${hasRes?`${g.ga}×${g.gb}`:"–"}</b> ${g.fora} ${FLAG[g.fora]||""}</div>
+       <div class="cmeta">${my?`<span class="myp">você: ${my.casa}×${my.fora}</span>`:""}${badge}</div>
+     </div>`;
+  }
+  const v=getVal(g.id);
   const cd=countdown(g);
-  const sent = !!my && !pending.has(g.id);
-  const status = locked
-     ? (my?`<span class="badge ${pt!=null?'b'+pt:''}">${pt!=null?pt+" pts":"sem aposta"}</span>`:`<span class="st-miss">não apostou</span>`)
-     : (pending.has(g.id)?`<button class="savebtn" data-save="${g.id}">Salvar</button>`
-        : (my?`<span class="st-ok">✓ enviado</span>`:`<span class="st-todo">toque − ou + e salve</span>`));
+  const status = pending.has(g.id)
+     ? `<button class="savebtn" data-save="${g.id}">Salvar</button>`
+     : (my?`<span class="st-ok">✓ enviado (${my.casa}×${my.fora}) — pode alterar</span>`:`<span class="st-todo">toque − ou + e salve</span>`);
   return `
-   <div class="game ${locked?'locked':''}" data-card="${g.id}">
-     <div class="cd ${cd.cls}" id="cd_${g.id}">${cd.txt}${isMadrugada(g)&&!hasRes?' · 🌙 madrugada':''}</div>
+   <div class="game" data-card="${g.id}">
+     <div class="cd ${cd.cls}" id="cd_${g.id}">${cd.txt}${isMadrugada(g)?' · 🌙 madrugada':''}</div>
      <div class="teams">
        <div class="team">${FLAG[g.casa]||"⚽"} <span>${g.casa}</span></div>
        <div class="stepper">
-         <button class="step" data-g="${g.id}" data-fld="c" data-d="-1" ${locked?"disabled":""} aria-label="menos">−</button>
-         <span class="score" id="sc_${g.id}">${locked?(my?my.casa:"–"):v.c}</span>
-         <button class="step" data-g="${g.id}" data-fld="c" data-d="1" ${locked?"disabled":""} aria-label="mais">+</button>
+         <button class="step" data-g="${g.id}" data-fld="c" data-d="-1" aria-label="menos">−</button>
+         <span class="score" id="sc_${g.id}">${v.c}</span>
+         <button class="step" data-g="${g.id}" data-fld="c" data-d="1" aria-label="mais">+</button>
        </div>
        <div class="xsep">×</div>
        <div class="stepper">
-         <button class="step" data-g="${g.id}" data-fld="f" data-d="-1" ${locked?"disabled":""} aria-label="menos">−</button>
-         <span class="score" id="sf_${g.id}">${locked?(my?my.fora:"–"):v.f}</span>
-         <button class="step" data-g="${g.id}" data-fld="f" data-d="1" ${locked?"disabled":""} aria-label="mais">+</button>
+         <button class="step" data-g="${g.id}" data-fld="f" data-d="-1" aria-label="menos">−</button>
+         <span class="score" id="sf_${g.id}">${v.f}</span>
+         <button class="step" data-g="${g.id}" data-fld="f" data-d="1" aria-label="mais">+</button>
        </div>
        <div class="team right"><span>${g.fora}</span> ${FLAG[g.fora]||"⚽"}</div>
      </div>
@@ -270,19 +284,25 @@ function renderBoard(){
 }
 
 function renderConfer(){
-  const t=document.getElementById("conferTable"); if(!t)return;
+  const box=document.getElementById("conferList"); if(!box)return;
   const ps=parts();
-  const withPal=gamesArr().filter(g=>ps.some(p=>palpiteOf(g.id,p)));
-  let html="<thead><tr><th>Jogo</th><th>Res</th>"+ps.map(p=>`<th>${p}</th>`).join("")+"</tr></thead><tbody>";
-  withPal.forEach(g=>{ const hasRes=g.ga!=null&&g.gb!=null;
-    html+=`<tr><td class="jogo">${g.casa} × ${g.fora}</td><td class="res">${hasRes?`${g.ga}×${g.gb}`:"—"}</td>`;
-    ps.forEach(p=>{ const my=palpiteOf(g.id,p);
-      if(!my){html+=`<td class="miss">·</td>`;return;}
+  const withPal=gamesArr().filter(g=>ps.some(p=>palpiteOf(g.id,p)))
+    .sort((a,b)=>new Date(b.kickoff)-new Date(a.kickoff));   // mais recentes primeiro
+  if(!withPal.length){ box.innerHTML=`<p class="empty">Ainda não há palpites lançados.</p>`; return; }
+  box.innerHTML="";
+  withPal.forEach(g=>{
+    const hasRes=g.ga!=null&&g.gb!=null;
+    let chips="";
+    ps.forEach(p=>{ const my=palpiteOf(g.id,p); if(!my)return;
       const pt=hasRes?pts(my.casa,my.fora,g.ga,g.gb):null;
-      const cls=pt===10?"p10":pt===7?"p7":pt===5?"p5":"";
-      html+=`<td class="${cls}">${my.casa}×${my.fora}</td>`; });
-    html+="</tr>"; });
-  t.innerHTML=html+"</tbody>";
+      const cls=pt===10?"c10":pt===7?"c7":pt===5?"c5":pt===0?"c0":"";
+      chips+=`<span class="cf ${cls}${p===me?' meCf':''}">${p} <b>${my.casa}×${my.fora}</b></span>`;
+    });
+    const card=document.createElement("div"); card.className="cgame";
+    card.innerHTML=`<div class="chead">${FLAG[g.casa]||""} ${g.casa} <b class="cr">${hasRes?`${g.ga} × ${g.gb}`:"× a definir"}</b> ${g.fora} ${FLAG[g.fora]||""}</div>
+      <div class="chips">${chips}</div>`;
+    box.appendChild(card);
+  });
 }
 
 function renderAdmin(){
