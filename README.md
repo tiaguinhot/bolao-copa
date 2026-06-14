@@ -37,10 +37,10 @@ No Firebase: **Firestore Database > aba Regras** > apague o conteúdo, cole o qu
 Abra o link, vá na aba **Admin**, digite seu `ADMIN_CODE` e clique em **Gravar dados base no banco**. Isso cria os 72 jogos, os participantes e os palpites/resultados já lançados até agora.
 
 ## Uso no dia a dia
-- **Família:** abre o link, escolhe o nome no topo, digita os placares nos jogos **Abertas** e clica em *Salvar*. Pode trocar enquanto não travar.
-- **Você (admin):** antes dos jogos, trave a rodada (aba Admin). Depois dos jogos, lance os resultados — o ranking atualiza para todos na hora. Jogos com resultado travam sozinhos.
+- **Família:** abre o link, escolhe o nome no topo (fica gravado no aparelho), e nos jogos do dia usa os botões **−** e **+** para montar o placar e toca em **Salvar**. Cada dia fica num bloco; jogos de madrugada (1h) ficam no bloco do dia anterior pra ninguém esquecer. Cada jogo mostra a **contagem regressiva** e **trava sozinho no horário do apito**.
+- **Acessibilidade:** botão **A− / A+** no topo aumenta o texto (ótimo pra quem enxerga pouco); botões grandes de − / + facilitam pra quem tem dificuldade com tecnologia.
+- **WhatsApp:** botão em cada dia para enviar os próprios palpites no grupo, e na aba Classificação um botão para publicar os resultados do dia + ranking.
+- **Você (organizador):** na aba Admin, lança os resultados — o ranking atualiza para todos na hora. Também há o campo **"Lançar / corrigir aposta"**, que permite registrar ou ajustar a aposta de qualquer pessoa em qualquer jogo **mesmo depois da trava de início** (para quando alguém mandou o palpite no grupo a tempo, mas você só conseguiu digitar depois). Essas apostas ficam marcadas como lançadas pelo organizador.
 
-## Travar apostas no horário do jogo
-A trava hoje é por rodada (manual) + automática quando há resultado. Se quiser trava
-automática no apito de cada jogo, dá pra evoluir guardando um campo `lockAt` (data/hora)
-por jogo e comparando com o horário atual — me avise que eu incluo.
+## Travas (anti-aposta atrasada)
+A aposta de cada jogo **fecha automaticamente no horário de início** (horário de Brasília, embutido em cada jogo) e também quando o resultado é lançado. A contagem regressiva fica visível até lá. Os horários já vêm da tabela oficial da FIFA; se a FIFA mudar algum, dá pra ajustar o campo `kickoff` do jogo no banco.

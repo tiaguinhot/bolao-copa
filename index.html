@@ -1,84 +1,105 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-size="m">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
 <title>Bolão Copa 2026 · Família Tagliapietra</title>
 <style>
   :root{
-    --bg:#0a1018;--panel:#111b2c;--panel2:#16223a;--line:rgba(255,255,255,.08);
-    --txt:#e9eef7;--muted:#8595ad;--green:#16d27a;--gold:#f4c84a;--silver:#c8d2e0;
-    --bronze:#d08a4e;--red:#ff5d6c;--blue:#4aa3ff;
+    --bg:#0b1220;--panel:#16223a;--panel2:#1d2c49;--line:rgba(255,255,255,.12);
+    --txt:#f2f6fc;--muted:#9fb0c9;--green:#1fe089;--green-d:#0e9c5a;--gold:#ffd24a;
+    --silver:#cdd7e6;--bronze:#e0995a;--red:#ff6b78;--blue:#5cb0ff;
+    --fs:17px;
   }
+  html[data-size="s"]{--fs:15px} html[data-size="m"]{--fs:17px}
+  html[data-size="l"]{--fs:20px} html[data-size="xl"]{--fs:24px}
   *{box-sizing:border-box}
-  body{margin:0;background:radial-gradient(1200px 500px at 50% -10%,#14233c 0,transparent 60%),var(--bg);
-    color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    -webkit-font-smoothing:antialiased;padding:0 0 60px}
-  .wrap{max-width:760px;margin:0 auto;padding:0 14px}
-  header{padding:22px 0 6px;text-align:center}
-  .kicker{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--green);font-weight:700}
-  h1{margin:5px 0 2px;font-size:clamp(24px,6vw,34px);font-weight:800;letter-spacing:-.5px}
-  .sub{color:var(--muted);font-size:13px}
-  #banner{display:none;background:rgba(255,93,108,.14);border:1px solid rgba(255,93,108,.4);color:#ffd0d5;
-    padding:10px 14px;border-radius:10px;margin:12px 0;font-size:13px}
-  .namebar{display:flex;gap:10px;align-items:center;justify-content:center;margin:14px 0 6px;flex-wrap:wrap}
-  .namebar select{background:var(--panel);border:1px solid var(--line);color:var(--txt);padding:10px 14px;border-radius:10px;font-size:15px;font-weight:600}
-  #hello{font-size:12px;color:var(--muted)}
-  .tabs{display:flex;gap:6px;justify-content:center;margin:14px 0 20px;flex-wrap:wrap}
-  .tab{background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:9px 16px;border-radius:999px;font-weight:600;font-size:14px;cursor:pointer}
+  body{margin:0;background:var(--bg);color:var(--txt);font-size:var(--fs);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:0 0 70px;line-height:1.4}
+  .wrap{max-width:680px;margin:0 auto;padding:0 14px}
+  header{padding:18px 0 4px;text-align:center}
+  .kicker{font-size:.7em;letter-spacing:.2em;text-transform:uppercase;color:var(--green);font-weight:800}
+  h1{margin:4px 0 2px;font-size:1.7em;font-weight:800}
+  .sub{color:var(--muted);font-size:.85em}
+  /* acessibilidade: tamanho do texto */
+  .sizebar{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:8px;color:var(--muted);font-size:.8em}
+  .sizebar button{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--txt);font-weight:800;cursor:pointer}
+  #banner{display:none;background:rgba(255,107,120,.15);border:1px solid rgba(255,107,120,.5);color:#ffd5d9;padding:12px 14px;border-radius:12px;margin:12px 0;font-size:.9em}
+  .namebar{margin:14px 0 4px}
+  .namebar select{width:100%;background:var(--panel);border:2px solid var(--green-d);color:var(--txt);
+    padding:15px;border-radius:14px;font-size:1.05em;font-weight:700;text-align:center}
+  #hello{text-align:center;color:var(--muted);font-size:.9em;margin-top:6px}
+  .tabs{display:flex;gap:6px;justify-content:center;margin:16px 0 18px;flex-wrap:wrap}
+  .tab{flex:1;min-width:90px;background:var(--panel);border:1px solid var(--line);color:var(--muted);
+    padding:13px 8px;border-radius:12px;font-weight:700;font-size:.92em;cursor:pointer;text-align:center}
   .tab.active{background:var(--green);color:#04210f;border-color:transparent}
   .view{display:none}.view.active{display:block}
-  .filters{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
-  .chip{background:var(--panel);border:1px solid var(--line);color:var(--muted);padding:7px 13px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer}
-  .chip.active{background:var(--panel2);color:var(--txt);border-color:var(--green)}
-  .game{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-bottom:9px}
-  .game.locked{opacity:.85}
-  .grow{flex:1;min-width:0}
-  .match{font-weight:700;font-size:15px}
-  .vs{color:var(--muted);font-weight:600;font-size:12px}
-  .meta{font-size:12px;color:var(--muted);margin-top:3px}
-  .meta .res{color:var(--green)}.meta .lk{color:var(--gold)}
-  .entry{display:flex;align-items:center;gap:7px}
-  .num{width:42px;background:var(--panel2);border:1px solid var(--line);color:var(--txt);text-align:center;
-    padding:8px 4px;border-radius:8px;font-size:16px;font-weight:700}
-  .num.ok{border-color:var(--green);background:rgba(22,210,122,.15)}
-  .x{color:var(--muted);font-weight:700}
-  .save{background:var(--green);color:#04210f;border:none;padding:8px 12px;border-radius:8px;font-weight:700;cursor:pointer;font-size:13px}
-  .badge{min-width:40px;text-align:center;font-weight:800;font-size:13px;padding:7px 8px;border-radius:8px;background:var(--panel2);color:var(--muted)}
-  .badge.b10{background:rgba(22,210,122,.18);color:var(--green)}
-  .badge.b7{background:rgba(74,163,255,.16);color:var(--blue)}
-  .badge.b5{background:rgba(244,200,74,.16);color:var(--gold)}
-  .badge.b0{background:rgba(255,93,108,.12);color:var(--red)}
-  .empty{color:var(--muted);text-align:center;padding:30px 0}
-  /* board */
-  .row{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:11px 15px;margin-bottom:8px}
-  .row.p1{border-color:var(--gold)}.row.p2{border-color:rgba(200,210,224,.5)}.row.p3{border-color:rgba(208,138,78,.5)}
-  .row.meRow{box-shadow:0 0 0 1px var(--green) inset}
-  .pos{font-size:20px;font-weight:800;text-align:center;color:var(--muted)}
+  .empty{color:var(--muted);text-align:center;padding:40px 10px;font-size:1.05em}
+  /* DIA */
+  .day{margin-bottom:14px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:rgba(255,255,255,.02)}
+  .day.today{border-color:var(--green)}
+  .dayhead{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;
+    background:var(--panel2);border:none;color:var(--txt);padding:15px 16px;font-size:1.05em;font-weight:800;cursor:pointer;text-align:left}
+  .daymeta{color:var(--muted);font-size:.7em;font-weight:700;white-space:nowrap}
+  .daybody{padding:10px}
+  /* JOGO */
+  .game{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:10px}
+  .game.locked{opacity:.7}
+  .cd{font-size:.8em;font-weight:700;margin-bottom:10px;color:var(--muted)}
+  .cd.soon{color:var(--blue)}.cd.urgent{color:var(--gold)}.cd.live{color:var(--red)}.cd.done{color:var(--green)}
+  .teams{display:flex;align-items:center;gap:6px}
+  .team{flex:1;font-weight:800;font-size:.95em;display:flex;align-items:center;gap:6px}
+  .team span{display:inline-block}
+  .team.right{justify-content:flex-end;text-align:right}
+  .stepper{display:flex;align-items:center;gap:4px}
+  .step{width:46px;height:46px;border-radius:12px;border:none;background:var(--panel2);color:var(--txt);
+    font-size:1.6em;font-weight:800;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+  .step:active{background:var(--green);color:#04210f}
+  .step:disabled{opacity:.35}
+  .score{min-width:34px;text-align:center;font-size:1.7em;font-weight:800;font-variant-numeric:tabular-nums}
+  .xsep{color:var(--muted);font-weight:800;padding:0 2px}
+  .cardfoot{margin-top:11px;text-align:center;min-height:34px;display:flex;justify-content:center;align-items:center}
+  .savebtn{background:var(--green);color:#04210f;border:none;padding:11px 30px;border-radius:11px;font-weight:800;font-size:1em;cursor:pointer}
+  .st-ok{color:var(--green);font-weight:800}
+  .st-todo{color:var(--muted);font-size:.85em}
+  .st-miss{color:var(--red);font-weight:700;font-size:.9em}
+  .badge{font-weight:800;padding:8px 16px;border-radius:10px;background:var(--panel2);color:var(--muted)}
+  .badge.b10{background:rgba(31,224,137,.2);color:var(--green)}
+  .badge.b7{background:rgba(92,176,255,.2);color:var(--blue)}
+  .badge.b5{background:rgba(255,210,74,.2);color:var(--gold)}
+  .badge.b0{background:rgba(255,107,120,.15);color:var(--red)}
+  .wa{width:100%;margin-top:4px;background:#1faf54;color:#fff;border:none;padding:14px;border-radius:12px;font-weight:800;font-size:.95em;cursor:pointer}
+  /* CLASSIFICAÇÃO */
+  .row{display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px 16px;margin-bottom:9px}
+  .row.p1{border-color:var(--gold)}.row.p2{border-color:rgba(205,215,230,.6)}.row.p3{border-color:rgba(224,153,90,.6)}
+  .row.meRow{box-shadow:0 0 0 2px var(--green) inset}
+  .pos{font-size:1.4em;font-weight:800;text-align:center;color:var(--muted)}
   .row.p1 .pos{color:var(--gold)}.row.p2 .pos{color:var(--silver)}.row.p3 .pos{color:var(--bronze)}
-  .who{font-weight:700;font-size:16px}.tag{font-size:10px;background:var(--green);color:#04210f;padding:1px 6px;border-radius:6px;vertical-align:middle}
-  .break{font-size:12px;color:var(--muted);margin-top:2px}.break b{color:var(--txt)}
-  .ptsBig{font-size:26px;font-weight:800}.ptsBig small{display:block;font-size:10px;color:var(--muted);text-align:right;letter-spacing:.15em;text-transform:uppercase}
-  /* confer */
-  table{border-collapse:collapse;width:100%;font-size:13px}
-  th,td{border:1px solid var(--line);padding:7px 8px;text-align:center;white-space:nowrap}
-  thead th{background:var(--panel2);font-weight:700}
-  td.jogo{text-align:left;font-weight:600}td.res{font-weight:800;color:var(--green)}
-  td.p10{background:rgba(22,210,122,.18);color:var(--green);font-weight:700}
-  td.p7{background:rgba(74,163,255,.16);color:var(--blue);font-weight:700}
-  td.p5{background:rgba(244,200,74,.16);color:var(--gold);font-weight:700}
+  .who{font-weight:800;font-size:1.05em}.tag{font-size:.6em;background:var(--green);color:#04210f;padding:2px 7px;border-radius:6px;vertical-align:middle}
+  .break{font-size:.78em;color:var(--muted);margin-top:2px}
+  .ptsBig{font-size:1.7em;font-weight:800}.ptsBig small{display:block;font-size:.42em;color:var(--muted);text-align:right;letter-spacing:.1em;text-transform:uppercase}
+  .wa.full{margin-top:6px}
+  /* CONFERÊNCIA */
+  table{border-collapse:collapse;width:100%;font-size:.82em}
+  th,td{border:1px solid var(--line);padding:8px;text-align:center;white-space:nowrap}
+  thead th{background:var(--panel2);font-weight:800;position:sticky;top:0}
+  td.jogo{text-align:left;font-weight:700}td.res{font-weight:800;color:var(--green)}
+  td.p10{background:rgba(31,224,137,.2);color:var(--green);font-weight:800}
+  td.p7{background:rgba(92,176,255,.2);color:var(--blue);font-weight:800}
+  td.p5{background:rgba(255,210,74,.2);color:var(--gold);font-weight:800}
   td.miss{color:var(--muted)}
-  /* admin */
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:16px;margin-bottom:14px}
-  .card h3{margin:0 0 12px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--green)}
-  .arow{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
-  .agame{flex:1;font-size:13px}.agame small{color:var(--muted)}
-  input[type=text],input[type=password],#adminCode,#newPart{background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:9px 12px;border-radius:9px;font-size:14px}
-  .btn{background:var(--green);color:#04210f;border:none;padding:10px 16px;border-radius:9px;font-weight:700;cursor:pointer}
-  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
+  /* ADMIN */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+  .card h3{margin:0 0 12px;font-size:.78em;letter-spacing:.15em;text-transform:uppercase;color:var(--green)}
+  .arow{display:flex;align-items:center;gap:7px;padding:7px 0;border-bottom:1px solid var(--line)}
+  .agame{flex:1;font-size:.88em}.agame small{color:var(--muted);display:block}
+  .anum{width:44px;background:var(--panel2);border:1px solid var(--line);color:var(--txt);text-align:center;padding:9px 4px;border-radius:9px;font-size:1.05em;font-weight:700}
+  .asel{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:12px;border-radius:10px;font-size:1em;margin-bottom:8px;font-weight:600}
+  input[type=text],input[type=password]{background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:11px 13px;border-radius:10px;font-size:1em}
+  .btn{background:var(--green);color:#04210f;border:none;padding:12px 18px;border-radius:10px;font-weight:800;cursor:pointer}
   #adminPanel{display:none}
-  #lockRounds{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-  .note{font-size:12px;color:var(--muted);line-height:1.6;text-align:center;margin-top:10px}
+  .note{font-size:.78em;color:var(--muted);line-height:1.6;margin-top:8px}
 </style>
 </head>
 <body>
@@ -87,14 +108,16 @@
     <div class="kicker">⚽ Família Tagliapietra</div>
     <h1>Bolão · Copa 2026</h1>
     <div class="sub" id="leaderline">Carregando…</div>
+    <div class="sizebar"><span>Tamanho do texto</span>
+      <button id="szDown" aria-label="diminuir texto">A−</button>
+      <button id="szUp" aria-label="aumentar texto">A+</button>
+    </div>
   </header>
 
   <div id="banner"></div>
 
-  <div class="namebar">
-    <select id="nameSel"></select>
-  </div>
-  <div id="hello" style="text-align:center"></div>
+  <div class="namebar"><select id="nameSel"></select></div>
+  <div id="hello"></div>
 
   <div class="tabs">
     <div class="tab active" data-v="apostar">Apostar</div>
@@ -103,55 +126,41 @@
     <div class="tab" data-v="admin">Admin</div>
   </div>
 
-  <section class="view active" id="apostar">
-    <div class="filters" id="filters">
-      <span class="chip active" data-r="abertas">Abertas</span>
-      <span class="chip" data-r="all">Todas</span>
-      <span class="chip" data-r="1">1ª</span>
-      <span class="chip" data-r="2">2ª</span>
-      <span class="chip" data-r="3">3ª</span>
-    </div>
-    <div id="gamesList"></div>
-  </section>
+  <section class="view active" id="apostar"><div id="blocks"></div></section>
 
-  <section class="view" id="board"><div id="boardList"></div></section>
+  <section class="view" id="board">
+    <div id="boardList"></div>
+    <button class="wa full" id="shareResults">📲 Compartilhar resultados e classificação no WhatsApp</button>
+  </section>
 
   <section class="view" id="confer">
     <div style="overflow-x:auto"><table id="conferTable"></table></div>
-    <div class="note">Verde = placar exato · azul = vencedor+saldo · amarelo = só vencedor.</div>
+    <p class="note" style="text-align:center">Verde = placar exato · azul = vencedor+saldo · amarelo = só vencedor.</p>
   </section>
 
   <section class="view" id="admin">
     <div class="card" id="adminGate">
-      <h3>Área restrita</h3>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <input type="password" id="adminCode" placeholder="código de admin">
-        <button class="btn" id="adminUnlock">Entrar</button>
-      </div>
+      <h3>Área do organizador</h3>
+      <div style="display:flex;gap:8px"><input type="password" id="adminCode" placeholder="código"><button class="btn" id="adminUnlock">Entrar</button></div>
     </div>
     <div id="adminPanel">
-      <div class="card">
-        <h3>Configuração inicial</h3>
-        <button class="btn" id="seedBtn">Gravar dados base no banco</button>
-        <p class="note" style="text-align:left">Use uma vez, logo após criar o projeto Firebase. Grava os 72 jogos, participantes e os palpites/resultados já lançados.</p>
-      </div>
-      <div class="card">
-        <h3>Participantes</h3>
-        <div style="display:flex;gap:8px"><input type="text" id="newPart" placeholder="novo nome"><button class="btn" id="addBtn">Adicionar</button></div>
-      </div>
-      <div class="card">
-        <h3>Travar apostas por rodada</h3>
-        <div id="lockRounds"></div>
-        <p class="note" style="text-align:left">Trave a rodada antes dos jogos começarem. Jogos com resultado lançado já travam sozinhos.</p>
-      </div>
-      <div class="card">
-        <h3>Resultados</h3>
-        <div id="adminGames"></div>
-      </div>
+      <div class="card"><h3>Configuração inicial</h3>
+        <button class="btn" id="seedBtn">Gravar dados base</button>
+        <p class="note">Use uma vez, após criar o projeto Firebase.</p></div>
+      <div class="card"><h3>Participantes</h3>
+        <div style="display:flex;gap:8px"><input type="text" id="newPart" placeholder="novo nome"><button class="btn" id="addBtn">Adicionar</button></div></div>
+      <div class="card"><h3>Lançar / corrigir aposta — vale mesmo após a trava</h3>
+        <select id="adminGameSel" class="asel"></select>
+        <select id="adminPartSel" class="asel"></select>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="anum" id="apCasa" inputmode="numeric" placeholder="–"><span>×</span><input class="anum" id="apFora" inputmode="numeric" placeholder="–">
+          <button class="btn" id="saveAdminBet">Salvar aposta</button>
+        </div>
+        <div id="adminBetStatus" class="note"></div></div>
+      <div class="card"><h3>Resultados</h3><div id="adminGames"></div></div>
     </div>
   </section>
 </div>
-
 <script type="module" src="app.js"></script>
 </body>
 </html>
