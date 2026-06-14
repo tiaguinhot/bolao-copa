@@ -406,8 +406,8 @@ function shareResults(){
   const dayGames=done.filter(g=>blockKey(g)===lastKey);
   let lines=[`📊 Resultados — ${dayGames.length?blockLabel(dayGames[0]):"Copa 2026"}`,""];
   dayGames.forEach(g=>lines.push(`${FLAG[g.casa]||""} ${g.casa} ${g.ga} × ${g.gb} ${g.fora} ${FLAG[g.fora]||""}`));
-  const arr=ps.map(p=>({p,pts:t[p].pts})).sort((a,b)=>b.pts-a.pts).slice(0,5);
-  lines.push("","🏆 Classificação:");
+  const arr=ps.map(p=>({p,pts:t[p].pts,e:t[p].e,s:t[p].s})).sort((a,b)=>b.pts-a.pts||b.e-a.e||b.s-a.s);
+  lines.push("","🏆 Classificação geral:");
   arr.forEach((o,i)=>lines.push(`${i+1}º ${o.p} — ${o.pts} pts`));
   share(lines.join("\n"));
 }
