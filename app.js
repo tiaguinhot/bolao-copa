@@ -239,19 +239,22 @@ function gameCard(g){
    <div class="game" data-card="${g.id}">
      <div class="cd ${cd.cls}" id="cd_${g.id}">${cd.txt}${isMadrugada(g)?' · 🌙 madrugada':''}</div>
      <div class="teams">
-       <div class="team">${FLAG[g.casa]||"⚽"} <span>${g.casa}</span></div>
-       <div class="stepper">
-         <button class="step" data-g="${g.id}" data-fld="c" data-d="-1" aria-label="menos">−</button>
-         <span class="score" id="sc_${g.id}">${v.c}</span>
-         <button class="step" data-g="${g.id}" data-fld="c" data-d="1" aria-label="mais">+</button>
+       <div class="teamrow">
+         <div class="team">${FLAG[g.casa]||"⚽"} <span>${g.casa}</span></div>
+         <div class="stepper">
+           <button class="step" data-g="${g.id}" data-fld="c" data-d="-1" aria-label="menos um gol ${g.casa}">−</button>
+           <span class="score" id="sc_${g.id}">${v.c}</span>
+           <button class="step" data-g="${g.id}" data-fld="c" data-d="1" aria-label="mais um gol ${g.casa}">+</button>
+         </div>
        </div>
-       <div class="xsep">×</div>
-       <div class="stepper">
-         <button class="step" data-g="${g.id}" data-fld="f" data-d="-1" aria-label="menos">−</button>
-         <span class="score" id="sf_${g.id}">${v.f}</span>
-         <button class="step" data-g="${g.id}" data-fld="f" data-d="1" aria-label="mais">+</button>
+       <div class="teamrow">
+         <div class="team">${FLAG[g.fora]||"⚽"} <span>${g.fora}</span></div>
+         <div class="stepper">
+           <button class="step" data-g="${g.id}" data-fld="f" data-d="-1" aria-label="menos um gol ${g.fora}">−</button>
+           <span class="score" id="sf_${g.id}">${v.f}</span>
+           <button class="step" data-g="${g.id}" data-fld="f" data-d="1" aria-label="mais um gol ${g.fora}">+</button>
+         </div>
        </div>
-       <div class="team right"><span>${g.fora}</span> ${FLAG[g.fora]||"⚽"}</div>
      </div>
      <div class="cardfoot">${status}</div>
    </div>`;

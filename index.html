@@ -48,16 +48,16 @@
   .game.locked{opacity:.7}
   .cd{font-size:.8em;font-weight:700;margin-bottom:10px;color:var(--muted)}
   .cd.soon{color:var(--blue)}.cd.urgent{color:var(--gold)}.cd.live{color:var(--red)}.cd.done{color:var(--green)}
-  .teams{display:flex;align-items:center;gap:6px}
-  .team{flex:1;font-weight:800;font-size:.95em;display:flex;align-items:center;gap:6px}
+  .teams{display:flex;flex-direction:column;gap:10px}
+  .teamrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .team{flex:1;min-width:0;font-weight:800;font-size:1em;display:flex;align-items:center;gap:8px;line-height:1.2}
   .team span{display:inline-block}
-  .team.right{justify-content:flex-end;text-align:right}
-  .stepper{display:flex;align-items:center;gap:4px}
+  .stepper{display:flex;align-items:center;gap:6px;flex-shrink:0}
   .step{width:46px;height:46px;border-radius:12px;border:none;background:var(--panel2);color:var(--txt);
     font-size:1.6em;font-weight:800;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
   .step:active{background:var(--green);color:#04210f}
   .step:disabled{opacity:.35}
-  .score{min-width:34px;text-align:center;font-size:1.7em;font-weight:800;font-variant-numeric:tabular-nums}
+  .score{min-width:30px;text-align:center;font-size:1.7em;font-weight:800;font-variant-numeric:tabular-nums}
   .xsep{color:var(--muted);font-weight:800;padding:0 2px}
   .cardfoot{margin-top:11px;text-align:center;min-height:34px;display:flex;justify-content:center;align-items:center}
   .savebtn{background:var(--green);color:#04210f;border:none;padding:11px 30px;border-radius:11px;font-weight:800;font-size:1em;cursor:pointer}
