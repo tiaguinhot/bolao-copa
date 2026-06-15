@@ -49,16 +49,19 @@
   .cd{font-size:.8em;font-weight:700;margin-bottom:10px;color:var(--muted)}
   .cd.soon{color:var(--blue)}.cd.urgent{color:var(--gold)}.cd.live{color:var(--red)}.cd.done{color:var(--green)}
   .teams{display:flex;flex-direction:column;gap:10px}
-  .teamrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-  .team{flex:1;min-width:0;font-weight:800;font-size:1em;display:flex;align-items:center;gap:8px;line-height:1.2}
-  .team span{display:inline-block}
-  .stepper{display:flex;align-items:center;gap:6px;flex-shrink:0}
-  .step{width:46px;height:46px;border-radius:12px;border:none;background:var(--panel2);color:var(--txt);
-    font-size:1.6em;font-weight:800;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+  .steprow{display:flex;align-items:flex-start;justify-content:center;gap:6px;margin-top:2px}
+  .stepcol{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1 1 0;min-width:0}
+  .flag{font-size:1.7em;line-height:1.1}
+  .sigla{font-size:1.55em;font-weight:800;letter-spacing:.03em;line-height:1}
+  .tname{font-size:.7em;color:var(--muted);font-weight:700;text-align:center;line-height:1.1;min-height:2.2em;display:flex;align-items:center;justify-content:center;padding:0 2px}
+  .stepcol .stepper{margin-top:5px}
+  .xsep{align-self:center;color:var(--muted);font-weight:800;font-size:1.3em;margin-top:2.2em}
+  .stepper{display:flex;align-items:center;gap:5px}
+  .step{width:42px;height:42px;border-radius:12px;border:none;background:var(--panel2);color:var(--txt);
+    font-size:1.5em;font-weight:800;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
   .step:active{background:var(--green);color:#04210f}
   .step:disabled{opacity:.35}
-  .score{min-width:30px;text-align:center;font-size:1.7em;font-weight:800;font-variant-numeric:tabular-nums}
-  .xsep{color:var(--muted);font-weight:800;padding:0 2px}
+  .score{min-width:28px;text-align:center;font-size:1.7em;font-weight:800;font-variant-numeric:tabular-nums}
   .cardfoot{margin-top:11px;text-align:center;min-height:34px;display:flex;justify-content:center;align-items:center}
   .savebtn{background:var(--green);color:#04210f;border:none;padding:11px 30px;border-radius:11px;font-weight:800;font-size:1em;cursor:pointer}
   .st-ok{color:var(--green);font-weight:800}
@@ -86,6 +89,7 @@
   .cf{background:var(--panel2);border:1px solid transparent;border-radius:9px;padding:6px 10px;font-size:.84em;font-weight:600;color:var(--muted)}
   .cf b{color:var(--txt);font-weight:800}
   .cf.meCf{outline:2px solid var(--green);outline-offset:1px}
+  .cmiss-line{margin-top:9px;padding-top:8px;border-top:1px dashed var(--line);font-size:.8em;color:var(--red);font-weight:700}
   .cf.c10{background:rgba(31,224,137,.18);color:var(--green)} .cf.c10 b{color:var(--green)}
   .cf.c7{background:rgba(92,176,255,.18);color:var(--blue)} .cf.c7 b{color:var(--blue)}
   .cf.c5{background:rgba(255,210,74,.18);color:var(--gold)} .cf.c5 b{color:var(--gold)}

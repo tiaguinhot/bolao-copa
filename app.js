@@ -90,8 +90,18 @@ const FLAG = {
  "Senegal":"🇸🇳","Iraque":"🇮🇶","Noruega":"🇳🇴","Áustria":"🇦🇹","Jordânia":"🇯🇴","Portugal":"🇵🇹",
  "RD Congo":"🇨🇩","Inglaterra":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croácia":"🇭🇷","Gana":"🇬🇭","Panamá":"🇵🇦","Uzbequistão":"🇺🇿","Colômbia":"🇨🇴"
 };
+const SIGLA = {
+ "México":"MEX","África do Sul":"RSA","Coreia do Sul":"KOR","Rep. Tcheca":"CZE","Canadá":"CAN",
+ "Bósnia e Herzegovina":"BIH","Estados Unidos":"USA","Paraguai":"PAR","Austrália":"AUS","Turquia":"TUR",
+ "Catar":"QAT","Suíça":"SUI","Brasil":"BRA","Marrocos":"MAR","Haiti":"HAI","Escócia":"SCO","Alemanha":"GER",
+ "Curaçao":"CUW","Holanda":"NED","Japão":"JPN","Costa do Marfim":"CIV","Equador":"ECU","Suécia":"SWE",
+ "Tunísia":"TUN","Espanha":"ESP","Cabo Verde":"CPV","Bélgica":"BEL","Egito":"EGY","Arábia Saudita":"KSA",
+ "Uruguai":"URU","Irã":"IRN","Nova Zelândia":"NZL","Argentina":"ARG","Argélia":"ALG","França":"FRA",
+ "Senegal":"SEN","Iraque":"IRQ","Noruega":"NOR","Áustria":"AUT","Jordânia":"JOR","Portugal":"POR",
+ "RD Congo":"COD","Inglaterra":"ENG","Croácia":"CRO","Gana":"GHA","Panamá":"PAN","Uzbequistão":"UZB","Colômbia":"COL"
+};
 const PARTS_SEED = ["Igor","Taci","Lucas","Isa","Bruno","Ivo","Ione","Murilo","Tiago","Greice"];
-const RESULTS_SEED = {1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[2,0],6:[1,1],7:[1,1],8:[0,1],9:[7,1]};
+const RESULTS_SEED = {1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[2,0],6:[1,1],7:[1,1],8:[0,1],9:[7,1],10:[2,2],11:[1,0],12:[5,1]};
 const PALP_SEED = {
  2:{Igor:[2,2],Taci:[3,0],Lucas:[1,0],Isa:[2,1],Bruno:[3,1],Ivo:[1,0],Murilo:[2,1],Tiago:[1,1],Ione:[1,1]},
  3:{Isa:[3,0],Bruno:[0,0],Igor:[2,2],Lucas:[2,0],Taci:[4,0],Murilo:[2,0],Ivo:[1,2],Ione:[1,0],Tiago:[2,0]},
@@ -238,17 +248,22 @@ function gameCard(g){
   return `
    <div class="game" data-card="${g.id}">
      <div class="cd ${cd.cls}" id="cd_${g.id}">${cd.txt}${isMadrugada(g)?' · 🌙 madrugada':''}</div>
-     <div class="teams">
-       <div class="teamrow">
-         <div class="team">${FLAG[g.casa]||"⚽"} <span>${g.casa}</span></div>
+     <div class="steprow">
+       <div class="stepcol">
+         <div class="flag">${FLAG[g.casa]||"⚽"}</div>
+         <div class="sigla">${SIGLA[g.casa]||"?"}</div>
+         <div class="tname">${g.casa}</div>
          <div class="stepper">
            <button class="step" data-g="${g.id}" data-fld="c" data-d="-1" aria-label="menos um gol ${g.casa}">−</button>
            <span class="score" id="sc_${g.id}">${v.c}</span>
            <button class="step" data-g="${g.id}" data-fld="c" data-d="1" aria-label="mais um gol ${g.casa}">+</button>
          </div>
        </div>
-       <div class="teamrow">
-         <div class="team">${FLAG[g.fora]||"⚽"} <span>${g.fora}</span></div>
+       <div class="xsep">×</div>
+       <div class="stepcol">
+         <div class="flag">${FLAG[g.fora]||"⚽"}</div>
+         <div class="sigla">${SIGLA[g.fora]||"?"}</div>
+         <div class="tname">${g.fora}</div>
          <div class="stepper">
            <button class="step" data-g="${g.id}" data-fld="f" data-d="-1" aria-label="menos um gol ${g.fora}">−</button>
            <span class="score" id="sf_${g.id}">${v.f}</span>
@@ -296,14 +311,17 @@ function renderConfer(){
   withPal.forEach(g=>{
     const hasRes=g.ga!=null&&g.gb!=null;
     let chips="";
-    ps.forEach(p=>{ const my=palpiteOf(g.id,p); if(!my)return;
+    const faltam=[];
+    ps.forEach(p=>{ const my=palpiteOf(g.id,p);
+      if(!my){ faltam.push(p); return; }
       const pt=hasRes?pts(my.casa,my.fora,g.ga,g.gb):null;
       const cls=pt===10?"c10":pt===7?"c7":pt===5?"c5":pt===0?"c0":"";
       chips+=`<span class="cf ${cls}${p===me?' meCf':''}">${p} <b>${my.casa}×${my.fora}</b></span>`;
     });
+    const faltaLine = faltam.length ? `<div class="cmiss-line">🚫 Sem aposta: ${faltam.join(", ")}</div>` : "";
     const card=document.createElement("div"); card.className="cgame";
-    card.innerHTML=`<div class="chead">${FLAG[g.casa]||""} ${g.casa} <b class="cr">${hasRes?`${g.ga} × ${g.gb}`:"× a definir"}</b> ${g.fora} ${FLAG[g.fora]||""}</div>
-      <div class="chips">${chips}</div>`;
+    card.innerHTML=`<div class="chead">${FLAG[g.casa]||""} ${SIGLA[g.casa]||g.casa} <b class="cr">${hasRes?`${g.ga} × ${g.gb}`:"× a definir"}</b> ${SIGLA[g.fora]||g.fora} ${FLAG[g.fora]||""}</div>
+      <div class="chips">${chips}</div>${faltaLine}`;
     box.appendChild(card);
   });
 }
