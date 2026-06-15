@@ -90,6 +90,18 @@ const FLAG = {
  "Senegal":"🇸🇳","Iraque":"🇮🇶","Noruega":"🇳🇴","Áustria":"🇦🇹","Jordânia":"🇯🇴","Portugal":"🇵🇹",
  "RD Congo":"🇨🇩","Inglaterra":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Croácia":"🇭🇷","Gana":"🇬🇭","Panamá":"🇵🇦","Uzbequistão":"🇺🇿","Colômbia":"🇨🇴"
 };
+const CODE = {
+ "México":"mx","África do Sul":"za","Coreia do Sul":"kr","Rep. Tcheca":"cz","Canadá":"ca",
+ "Bósnia e Herzegovina":"ba","Estados Unidos":"us","Paraguai":"py","Austrália":"au","Turquia":"tr",
+ "Catar":"qa","Suíça":"ch","Brasil":"br","Marrocos":"ma","Haiti":"ht","Escócia":"gb-sct","Alemanha":"de",
+ "Curaçao":"cw","Holanda":"nl","Japão":"jp","Costa do Marfim":"ci","Equador":"ec","Suécia":"se",
+ "Tunísia":"tn","Espanha":"es","Cabo Verde":"cv","Bélgica":"be","Egito":"eg","Arábia Saudita":"sa",
+ "Uruguai":"uy","Irã":"ir","Nova Zelândia":"nz","Argentina":"ar","Argélia":"dz","França":"fr",
+ "Senegal":"sn","Iraque":"iq","Noruega":"no","Áustria":"at","Jordânia":"jo","Portugal":"pt",
+ "RD Congo":"cd","Inglaterra":"gb-eng","Croácia":"hr","Gana":"gh","Panamá":"pa","Uzbequistão":"uz","Colômbia":"co"
+};
+function flagImg(team,cls){ const c=CODE[team];
+  return c?`<img class="${cls||'fsm'}" src="https://flagcdn.com/${c}.svg" alt="" loading="lazy">`:"⚽"; }
 const SIGLA = {
  "México":"MEX","África do Sul":"RSA","Coreia do Sul":"KOR","Rep. Tcheca":"CZE","Canadá":"CAN",
  "Bósnia e Herzegovina":"BIH","Estados Unidos":"USA","Paraguai":"PAR","Austrália":"AUS","Turquia":"TUR",
@@ -236,7 +248,7 @@ function gameCard(g){
       : `<span class="st-miss">não apostou</span>`;
     return `
      <div class="game locked compact" data-card="${g.id}">
-       <div class="cteams">${FLAG[g.casa]||""} ${g.casa} <b>${hasRes?`${g.ga}×${g.gb}`:"–"}</b> ${g.fora} ${FLAG[g.fora]||""}</div>
+       <div class="cteams">${flagImg(g.casa,'fsm')} ${g.casa} <b>${hasRes?`${g.ga}×${g.gb}`:"–"}</b> ${g.fora} ${flagImg(g.fora,'fsm')}</div>
        <div class="cmeta">${my?`<span class="myp">você: ${my.casa}×${my.fora}</span>`:""}${badge}</div>
      </div>`;
   }
@@ -250,7 +262,7 @@ function gameCard(g){
      <div class="cd ${cd.cls}" id="cd_${g.id}">${cd.txt}${isMadrugada(g)?' · 🌙 madrugada':''}</div>
      <div class="steprow">
        <div class="stepcol">
-         <div class="flag">${FLAG[g.casa]||"⚽"}</div>
+         <div class="flag">${flagImg(g.casa,'fbig')}</div>
          <div class="sigla">${SIGLA[g.casa]||"?"}</div>
          <div class="tname">${g.casa}</div>
          <div class="stepper">
@@ -261,7 +273,7 @@ function gameCard(g){
        </div>
        <div class="xsep">×</div>
        <div class="stepcol">
-         <div class="flag">${FLAG[g.fora]||"⚽"}</div>
+         <div class="flag">${flagImg(g.fora,'fbig')}</div>
          <div class="sigla">${SIGLA[g.fora]||"?"}</div>
          <div class="tname">${g.fora}</div>
          <div class="stepper">
@@ -320,7 +332,7 @@ function renderConfer(){
     });
     const faltaLine = faltam.length ? `<div class="cmiss-line">🚫 Sem aposta: ${faltam.join(", ")}</div>` : "";
     const card=document.createElement("div"); card.className="cgame";
-    card.innerHTML=`<div class="chead">${FLAG[g.casa]||""} ${SIGLA[g.casa]||g.casa} <b class="cr">${hasRes?`${g.ga} × ${g.gb}`:"× a definir"}</b> ${SIGLA[g.fora]||g.fora} ${FLAG[g.fora]||""}</div>
+    card.innerHTML=`<div class="chead">${flagImg(g.casa,'fsm')} ${SIGLA[g.casa]||g.casa} <b class="cr">${hasRes?`${g.ga} × ${g.gb}`:"× a definir"}</b> ${SIGLA[g.fora]||g.fora} ${flagImg(g.fora,'fsm')}</div>
       <div class="chips">${chips}</div>${faltaLine}`;
     box.appendChild(card);
   });
