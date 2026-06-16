@@ -23,10 +23,10 @@ const GAMES_SEED = [
  [14,1,"Bélgica","Egito","2026-06-15T16:00:00-03:00"],
  [15,1,"Arábia Saudita","Uruguai","2026-06-15T19:00:00-03:00"],
  [16,1,"Irã","Nova Zelândia","2026-06-15T22:00:00-03:00"],
- [17,1,"Argentina","Argélia","2026-06-16T14:00:00-03:00"],
+ [17,1,"Argentina","Argélia","2026-06-16T22:00:00-03:00"],
  [18,1,"França","Senegal","2026-06-16T16:00:00-03:00"],
  [19,1,"Iraque","Noruega","2026-06-16T19:00:00-03:00"],
- [20,1,"Áustria","Jordânia","2026-06-18T01:00:00-03:00"],
+ [20,1,"Áustria","Jordânia","2026-06-17T01:00:00-03:00"],
  [21,1,"Portugal","RD Congo","2026-06-17T14:00:00-03:00"],
  [22,1,"Inglaterra","Croácia","2026-06-17T17:00:00-03:00"],
  [23,1,"Gana","Panamá","2026-06-17T20:00:00-03:00"],
@@ -42,7 +42,7 @@ const GAMES_SEED = [
  [33,2,"Holanda","Suécia","2026-06-20T14:00:00-03:00"],
  [34,2,"Alemanha","Costa do Marfim","2026-06-20T17:00:00-03:00"],
  [35,2,"Equador","Curaçao","2026-06-20T21:00:00-03:00"],
- [36,2,"Tunísia","Japão","2026-06-22T01:00:00-03:00"],
+ [36,2,"Tunísia","Japão","2026-06-21T01:00:00-03:00"],
  [37,2,"Espanha","Arábia Saudita","2026-06-21T13:00:00-03:00"],
  [38,2,"Bélgica","Irã","2026-06-21T16:00:00-03:00"],
  [39,2,"Uruguai","Cabo Verde","2026-06-21T19:00:00-03:00"],
@@ -50,7 +50,7 @@ const GAMES_SEED = [
  [41,2,"Argentina","Áustria","2026-06-22T14:00:00-03:00"],
  [42,2,"França","Iraque","2026-06-22T18:00:00-03:00"],
  [43,2,"Noruega","Senegal","2026-06-22T21:00:00-03:00"],
- [44,2,"Jordânia","Argélia","2026-06-24T00:00:00-03:00"],
+ [44,2,"Jordânia","Argélia","2026-06-23T00:00:00-03:00"],
  [45,2,"Inglaterra","Gana","2026-06-23T17:00:00-03:00"],
  [46,2,"Portugal","Uzbequistão","2026-06-23T14:00:00-03:00"],
  [47,2,"Panamá","Croácia","2026-06-23T20:00:00-03:00"],
@@ -71,8 +71,8 @@ const GAMES_SEED = [
  [62,3,"Senegal","Iraque","2026-06-26T16:00:00-03:00"],
  [63,3,"Cabo Verde","Arábia Saudita","2026-06-26T21:00:00-03:00"],
  [64,3,"Uruguai","Espanha","2026-06-26T21:00:00-03:00"],
- [65,3,"Egito","Irã","2026-06-28T00:00:00-03:00"],
- [66,3,"Nova Zelândia","Bélgica","2026-06-28T00:00:00-03:00"],
+ [65,3,"Egito","Irã","2026-06-27T00:00:00-03:00"],
+ [66,3,"Nova Zelândia","Bélgica","2026-06-27T00:00:00-03:00"],
  [67,3,"Panamá","Inglaterra","2026-06-27T18:00:00-03:00"],
  [68,3,"Croácia","Gana","2026-06-27T18:00:00-03:00"],
  [69,3,"Colômbia","Portugal","2026-06-27T20:30:00-03:00"],
@@ -163,19 +163,29 @@ function pts(pc,pf,gc,gf){
   if(sg(pc-pf)===sg(gc-gf)) return (pc-pf)===(gc-gf)?SCORING.saldo:SCORING.venc;
   return 0;
 }
-const gamesArr = ()=>Object.values(STATE.games).sort((a,b)=>new Date(a.kickoff)-new Date(b.kickoff)||a.id-b.id);
+// Os dados fixos do jogo (times, horário, data/dia) vêm SEMPRE do código.
+// Do banco usamos apenas o resultado (ga/gb). Assim, corrigir um horário é só publicar o app.
+const LOCAL_GAMES = {};
+GAMES_SEED.forEach(([id,rod,casa,fora,kickoff])=>{ LOCAL_GAMES[id]={id,rod,casa,fora,kickoff,dia:bdiaOf(kickoff)}; });
+const gamesArr = ()=>Object.values(LOCAL_GAMES)
+  .map(g=>{ const r=STATE.games[g.id]||{}; return {...g, ga:(r.ga??null), gb:(r.gb??null)}; })
+  .sort((a,b)=>new Date(a.kickoff)-new Date(b.kickoff)||a.id-b.id);
 const palpiteOf = (gid,name)=>STATE.palpites[`${gid}__${name}`];
 const parts = ()=>STATE.config.participants||[];
 const kdate = g=>new Date(g.kickoff);
 function isLocked(g){ return (g.ga!=null&&g.gb!=null) || Date.now()>=kdate(g).getTime(); }
 
 function fmtTime(d){ return new Intl.DateTimeFormat("pt-BR",{timeZone:SP,hour:"2-digit",minute:"2-digit",hour12:false}).format(d); }
-function blockKey(g){ const b=new Date(kdate(g).getTime()-6*3600000);
+// "dia da aposta": madrugada (0h/1h) conta para o dia anterior — calculado recuando 6h do início.
+function bdiaOf(kickoffISO){ const b=new Date(new Date(kickoffISO).getTime()-6*3600000);
   return new Intl.DateTimeFormat("en-CA",{timeZone:SP,year:"numeric",month:"2-digit",day:"2-digit"}).format(b); }
-function blockLabel(g){ const b=new Date(kdate(g).getTime()-6*3600000);
-  const s=new Intl.DateTimeFormat("pt-BR",{timeZone:SP,weekday:"long",day:"2-digit",month:"long"}).format(b);
+function blockKey(g){ return g.dia || bdiaOf(g.kickoff); }   // prefere o dia gravado no banco
+function blockLabel(g){
+  const key=blockKey(g);
+  const d=new Date(key+"T12:00:00-03:00");                   // meio-dia evita virar o dia na formatação
+  const s=new Intl.DateTimeFormat("pt-BR",{timeZone:SP,weekday:"long",day:"2-digit",month:"long"}).format(d);
   return s.charAt(0).toUpperCase()+s.slice(1); }
-function isMadrugada(g){ // kickoff cai em dia diferente do bloco
+function isMadrugada(g){ // kickoff cai em dia diferente do dia da aposta
   const dayK=new Intl.DateTimeFormat("en-CA",{timeZone:SP,year:"numeric",month:"2-digit",day:"2-digit"}).format(kdate(g));
   return dayK!==blockKey(g);
 }
@@ -424,7 +434,7 @@ async function seedData(){
   if(!confirm("Gravar 72 jogos, participantes e os palpites/resultados já existentes?"))return;
   const b=writeBatch(db);
   GAMES_SEED.forEach(([id,rod,casa,fora,kickoff])=>{ const r=RESULTS_SEED[id];
-    b.set(doc(db,"games",String(id)),{id,rod,casa,fora,kickoff,ga:r?r[0]:null,gb:r?r[1]:null},{merge:true}); });
+    b.set(doc(db,"games",String(id)),{id,rod,casa,fora,kickoff,dia:bdiaOf(kickoff),ga:r?r[0]:null,gb:r?r[1]:null},{merge:true}); });
   b.set(doc(db,"config","bolao"),{participants:PARTS_SEED,scoring:SCORING},{merge:true});
   Object.entries(PALP_SEED).forEach(([gid,o])=>Object.entries(o).forEach(([n,v])=>
     b.set(doc(db,"palpites",`${gid}__${n}`),{gameId:+gid,name:n,casa:v[0],fora:v[1]},{merge:true})));
