@@ -77,13 +77,26 @@
   .wa{width:100%;margin-top:4px;background:#1faf54;color:#fff;border:none;padding:14px;border-radius:12px;font-weight:800;font-size:.95em;cursor:pointer}
   /* seletor de visão da classificação */
   .seg{display:flex;gap:6px;margin-bottom:14px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px}
-  .segbtn{flex:1;background:transparent;border:none;color:var(--muted);padding:11px 6px;border-radius:9px;font-weight:800;font-size:.9em;cursor:pointer}
-  .segbtn.active{background:var(--green);color:#04210f}
+  .segbtn,.cfsegbtn{flex:1;background:transparent;border:none;color:var(--muted);padding:11px 6px;border-radius:9px;font-weight:800;font-size:.9em;cursor:pointer}
+  .segbtn.active,.cfsegbtn.active{background:var(--green);color:#04210f}
   /* selo de fase eliminatória */
   .rodtag{display:inline-block;background:rgba(255,210,74,.16);color:var(--gold);font-weight:800;font-size:.72em;
     letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:8px;margin-bottom:9px}
   .rodtag.sm{font-size:.66em;padding:3px 8px;margin-bottom:7px}
   .compactrow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  /* campeão da fase de grupos */
+  .champ{background:linear-gradient(160deg,rgba(255,210,74,.22),rgba(255,210,74,.04));border:1px solid var(--gold);
+    border-radius:18px;padding:20px 16px;text-align:center;margin-bottom:14px}
+  .champ-crown{font-size:2.6em;line-height:1;filter:drop-shadow(0 2px 6px rgba(255,210,74,.5))}
+  .champ-name{font-size:1.6em;font-weight:800;color:var(--gold);margin-top:4px;letter-spacing:.02em}
+  .champ-sub{font-size:.86em;color:var(--txt);font-weight:700;margin-top:3px}
+  .champ-podium{font-size:.86em;color:var(--muted);margin-top:9px;font-weight:600}
+  .champ-line{font-size:.84em;color:var(--txt);margin-top:11px;font-style:italic;opacity:.92;line-height:1.5}
+  /* painel de disputa */
+  .hype{background:linear-gradient(160deg,rgba(31,224,137,.08),rgba(31,224,137,0));border:1px solid var(--line);
+    border-radius:14px;padding:13px 15px;margin-bottom:14px}
+  .hype-title{font-size:.7em;letter-spacing:.12em;text-transform:uppercase;color:var(--green);font-weight:800;margin-bottom:9px}
+  .hl{font-size:.9em;line-height:1.5;margin:6px 0;color:var(--txt)}
   /* jogo compacto (travado/encerrado) */
   .game.compact{display:block;padding:10px 13px}
   .compact .cteams{font-size:.85em;font-weight:700;line-height:1.3}
@@ -169,11 +182,17 @@
       <button class="segbtn" data-bv="grupos">Grupos</button>
       <button class="segbtn" data-bv="eliminatoria">Eliminatória</button>
     </div>
+    <div id="hype"></div>
     <div id="boardList"></div>
     <button class="wa full" id="shareResults">📲 Compartilhar resultados e classificação no WhatsApp</button>
   </section>
 
   <section class="view" id="confer">
+    <div class="seg">
+      <button class="cfsegbtn active" data-cv="eliminatoria">⚔️ Eliminatória</button>
+      <button class="cfsegbtn" data-cv="grupos">Grupos</button>
+      <button class="cfsegbtn" data-cv="todos">Tudo</button>
+    </div>
     <div id="conferList"></div>
     <p class="note" style="text-align:center">Verde = placar exato · azul = vencedor+saldo · amarelo = só vencedor · vermelho = errou.</p>
   </section>

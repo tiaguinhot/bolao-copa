@@ -334,6 +334,90 @@ function totals(fase){   // fase: "grupos" | "eliminatoria" | undefined(=todas)
   return t;
 }
 let boardView="geral";  // geral | grupos | eliminatoria
+const FRASES_CAMPEAO=[
+ "Dominou do primeiro ao último jogo. Respeita o rei dos grupos! 👑",
+ "Cravou os palpites e levou a taça da primeira fase. O resto que corra atrás! 🔥",
+ "Campeão merecido dos grupos. Agora é defender o título no mata-mata! 🏆",
+ "Mostrou que entende de bola (ou tem sorte de sobra). Parabéns! 🎉",
+];
+const pick=(a,seed)=>a[((seed?seed.length:0)*7+3)%a.length];
+function phaseStatus(fase){
+  const gs=gamesArr().filter(g=> fase? g.fase===fase : true);
+  const done=gs.filter(g=>g.ga!=null&&g.gb!=null).length;
+  return {total:gs.length, done, remaining:gs.length-done};
+}
+function hypeData(view, arr){
+  if(!arr.length || arr[0].pts===0)
+    return {type:"dispute", title:null, lines:["🎯 Disputa zerada — que comece a brincadeira! Bons palpites a todos."]};
+  const fase = view==="grupos"?"grupos" : view==="eliminatoria"?"eliminatoria" : null;
+  const st = phaseStatus(fase);
+  const finished = view==="grupos" && st.total>0 && st.remaining===0;
+  const top=arr[0];
+  const leaders=arr.filter(o=>o.pts===top.pts).map(o=>o.p);
+  const second=arr.find(o=>o.pts<top.pts);
+  const gap=second? top.pts-second.pts : 0;
+  const third=arr[2];
+  const spread3=third? top.pts-third.pts : 0;
+  const faseNome = view==="grupos"?"dos grupos" : view==="eliminatoria"?"do mata-mata":"geral";
+
+  if(finished){
+    const vice=arr[1], terc=arr[2];
+    return {type:"champ", plural:leaders.length>1,
+      name: leaders.length>1?leaders.join(" & "):top.p, pts:top.pts,
+      vice: vice?`${vice.p} (${vice.pts})`:"—", terc: terc?`${terc.p} (${terc.pts})`:"—",
+      line: pick(FRASES_CAMPEAO, top.p)};
+  }
+
+  const lines=[];
+  if(leaders.length>1)
+    lines.push(`🔥 Empate na liderança ${faseNome}! ${leaders.join(" e ")} dividem o topo com ${top.pts} pts. Quem desencanta primeiro?`);
+  else if(gap<=2)
+    lines.push(`👀 Liderança por um fio: ${top.p} está só ${gap} pt${gap>1?'s':''} à frente de ${second.p}. Um placar exato vira o jogo!`);
+  else if(gap<=5)
+    lines.push(`⚡ ${top.p} lidera, mas ${second.p} cola a ${gap} pts. Tá pegando fogo!`);
+  else if(gap>=12)
+    lines.push(`🚀 ${top.p} disparou: ${gap} pts de vantagem sobre ${second.p}. Alguém segura essa?`);
+  else
+    lines.push(`🏁 ${top.p} na ponta com ${top.pts} pts, ${gap} à frente de ${second.p}.`);
+
+  if(third && spread3<=6 && leaders.length===1)
+    lines.push(`🎢 Top 3 coladinho: ${arr[0].p}, ${arr[1].p} e ${arr[2].p} separados por só ${spread3} pts.`);
+  if(st.remaining>0)
+    lines.push(`⏳ Ainda faltam ${st.remaining} jogo${st.remaining>1?'s':''} ${view==='geral'?'até o fim da Copa':'nesta fase'} — muita coisa pode mudar!`);
+  const lanterna=arr[arr.length-1];
+  if(arr.length>=4 && lanterna.pts<top.pts)
+    lines.push(`🪑 ${lanterna.p} fechando a tabela com ${lanterna.pts} — bora reagir!`);
+
+  const titulo={grupos:"Fase de Grupos",eliminatoria:"Fase Eliminatória",geral:"Classificação Geral"}[view];
+  return {type:"dispute", title:titulo, faseNome, lines};
+}
+function hypeHTML(view, arr){
+  const d=hypeData(view,arr);
+  if(d.type==="champ"){
+    return `<div class="champ">
+      <div class="champ-crown">🏆</div>
+      <div class="champ-name">${d.name}</div>
+      <div class="champ-sub">Campeã${d.plural?'s':'o'} da Fase de Grupos · ${d.pts} pts</div>
+      <div class="champ-podium">🥈 ${d.vice}　🥉 ${d.terc}</div>
+      <div class="champ-line">${d.line}</div>
+    </div>`;
+  }
+  const lines=d.lines.slice();
+  if(me){ const mine=arr.find(o=>o.p===me);
+    if(mine){ const pos=arr.indexOf(mine)+1, dd=arr[0].pts-mine.pts;
+      lines.push(pos===1 ? `👑 E o líder ${d.faseNome} é você! Segura o topo.`
+                         : `💪 Você está em ${pos}º, a ${dd} pt${dd>1?'s':''} do líder. Dá pra virar!`);
+    }
+  }
+  return `<div class="hype"><div class="hype-title">⚽ ${d.title} — a disputa</div>${lines.map(l=>`<div class="hl">${l}</div>`).join("")}</div>`;
+}
+function hypeText(view, arr){
+  const d=hypeData(view,arr);
+  if(d.type==="champ")
+    return [`🏆 CAMPEÃ${d.plural?'S':'O'} DA FASE DE GRUPOS: ${d.name} — ${d.pts} pts`,
+            `🥈 ${d.vice}　🥉 ${d.terc}`, d.line].join("\n");
+  return d.lines.join("\n");
+}
 function renderBoard(){
   const box=document.getElementById("boardList"); if(!box)return;
   const tg=totals("grupos"), te=totals("eliminatoria"), tt=totals();
@@ -341,6 +425,7 @@ function renderBoard(){
   const arr=parts().map(p=>({p,...src[p], g:tg[p].pts, el:te[p].pts}))
     .sort((a,b)=>b.pts-a.pts||b.e-a.e||b.s-a.s);
   document.querySelectorAll(".segbtn").forEach(b=>b.classList.toggle("active",b.dataset.bv===boardView));
+  const hb=document.getElementById("hype"); if(hb) hb.innerHTML=hypeHTML(boardView,arr);
   box.innerHTML="";
   arr.forEach((o,i)=>{ const pos=i+1;
     const r=document.createElement("div"); r.className="row"+(pos<=3?" p"+pos:"")+(o.p===me?" meRow":"");
@@ -357,14 +442,19 @@ function renderBoard(){
   document.getElementById("leaderline").textContent = top&&top.pts>0?`🏆 Líder ${nome}: ${top.p} (${top.pts} pts)`:"Boa sorte!";
 }
 
+let conferView="eliminatoria";  // eliminatoria | grupos | todos
 function renderConfer(){
   const box=document.getElementById("conferList"); if(!box)return;
   const ps=parts();
-  const withPal=gamesArr().filter(g=>ps.some(p=>palpiteOf(g.id,p)))
-    .sort((a,b)=>new Date(b.kickoff)-new Date(a.kickoff));   // mais recentes primeiro
-  if(!withPal.length){ box.innerHTML=`<p class="empty">Ainda não há palpites lançados.</p>`; return; }
+  document.querySelectorAll(".cfsegbtn").forEach(b=>b.classList.toggle("active",b.dataset.cv===conferView));
+  let games=gamesArr();
+  if(conferView!=="todos") games=games.filter(g=>g.fase===conferView);
+  // na eliminatória mostramos todos os jogos (mesmo sem palpite, p/ acompanhar); nos demais, só os com palpite
+  const list=(conferView==="eliminatoria"?games:games.filter(g=>ps.some(p=>palpiteOf(g.id,p))))
+    .sort((a,b)=>new Date(b.kickoff)-new Date(a.kickoff));
+  if(!list.length){ box.innerHTML=`<p class="empty">Nada para mostrar aqui ainda.</p>`; return; }
   box.innerHTML="";
-  withPal.forEach(g=>{
+  list.forEach(g=>{
     const hasRes=g.ga!=null&&g.gb!=null;
     let chips="";
     const faltam=[];
@@ -374,10 +464,11 @@ function renderConfer(){
       const cls=pt===10?"c10":pt===7?"c7":pt===5?"c5":pt===0?"c0":"";
       chips+=`<span class="cf ${cls}${p===me?' meCf':''}">${p} <b>${my.casa}×${my.fora}</b></span>`;
     });
-    const faltaLine = faltam.length ? `<div class="cmiss-line">🚫 Sem aposta: ${faltam.join(", ")}</div>` : "";
+    const chipsBox = chips ? `<div class="chips">${chips}</div>` : `<div class="cmiss-line" style="border:none;margin-top:6px">Ninguém apostou ainda</div>`;
+    const faltaLine = (chips && faltam.length) ? `<div class="cmiss-line">🚫 Sem aposta: ${faltam.join(", ")}</div>` : "";
     const card=document.createElement("div"); card.className="cgame";
     card.innerHTML=`${g.fase==="eliminatoria"?`<div class="rodtag sm">⚔️ ${g.rodLabel}</div>`:""}<div class="chead">${flagImg(g.casa,'fsm')} ${SIGLA[g.casa]||g.casa} <b class="cr">${hasRes?`${g.ga} × ${g.gb}`:"× a definir"}</b> ${SIGLA[g.fora]||g.fora} ${flagImg(g.fora,'fsm')}</div>
-      <div class="chips">${chips}</div>${faltaLine}`;
+      ${chipsBox}${faltaLine}`;
     box.appendChild(card);
   });
 }
@@ -502,12 +593,15 @@ function shareResults(){
   const lastKey=done.length?blockKey(done[done.length-1]):null;
   const dayGames=done.filter(g=>blockKey(g)===lastKey);
   const nome={geral:"GERAL",grupos:"FASE DE GRUPOS",eliminatoria:"FASE ELIMINATÓRIA"}[boardView];
+  const arr=ps.map(p=>({p,pts:t[p].pts,e:t[p].e,s:t[p].s,g:tg[p].pts,el:te[p].pts}))
+    .sort((a,b)=>b.pts-a.pts||b.e-a.e||b.s-a.s);
   let lines=[];
+  // provocação/campeão no topo
+  const hype=hypeText(boardView,arr);
+  if(hype){ lines.push(hype,""); }
   if(dayGames.length){ lines.push(`📊 Resultados — ${blockLabel(dayGames[0])}`,"");
     dayGames.forEach(g=>lines.push(`${FLAG[g.casa]||""} ${g.casa} ${g.ga} × ${g.gb} ${g.fora} ${FLAG[g.fora]||""}`)); lines.push(""); }
   lines.push(`🏆 Classificação — ${nome}:`);
-  const arr=ps.map(p=>({p,pts:t[p].pts,e:t[p].e,s:t[p].s,g:tg[p].pts,el:te[p].pts}))
-    .sort((a,b)=>b.pts-a.pts||b.e-a.e||b.s-a.s);
   arr.forEach((o,i)=>lines.push(boardView==="geral"
     ? `${i+1}º ${o.p} — ${o.pts} pts (G ${o.g} · E ${o.el})`
     : `${i+1}º ${o.p} — ${o.pts} pts`));
@@ -542,6 +636,7 @@ document.getElementById("blocks").addEventListener("click",e=>{
 });
 document.getElementById("shareResults").onclick=shareResults;
 document.querySelectorAll(".segbtn").forEach(b=>b.onclick=()=>{ boardView=b.dataset.bv; renderBoard(); });
+document.querySelectorAll(".cfsegbtn").forEach(b=>b.onclick=()=>{ conferView=b.dataset.cv; renderConfer(); });
 document.getElementById("adminUnlock").onclick=()=>{
   if(document.getElementById("adminCode").value===ADMIN_CODE){
     isAdmin=true; document.getElementById("adminPanel").style.display="block";
