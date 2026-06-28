@@ -339,8 +339,83 @@ const FRASES_CAMPEAO=[
  "Cravou os palpites e levou a taça da primeira fase. O resto que corra atrás! 🔥",
  "Campeão merecido dos grupos. Agora é defender o título no mata-mata! 🏆",
  "Mostrou que entende de bola (ou tem sorte de sobra). Parabéns! 🎉",
+ "Foi líder, é líder e terminou líder. Tá de outro nível! 🛐",
+ "O bolão tem dono na fase de grupos. Aplausos (e um tiquinho de inveja)! 👏",
+ "Enquanto a galera chutava, esse cravava. Campeoníssimo! 🥇",
+ "Palpiteiro raiz, resultado nota 10. Tirem o chapéu! 🎩",
 ];
-const pick=(a,seed)=>a[((seed?seed.length:0)*7+3)%a.length];
+const F_LIDER=[
+ "👑 {n} no trono com {p} pts. Já pode ensaiar a dancinha do título.",
+ "🥇 {n} na liderança. Alguém avisa que ainda não acabou?",
+ "🔥 {n} no topo com {p} pts. Tá achando fácil, né?",
+ "😎 {n} comandando o bolão. Aproveita enquanto dura.",
+ "🚀 {n} voando na frente. Cadê a torcida contra?",
+ "🧠 {n} líder — ou entende de bola, ou tá com o santo forte.",
+ "📈 {n} no topo com {p} pts. O resto que treine os palpites.",
+ "🛡️ {n} segurando a ponta. Vem quente que tá fervendo!",
+];
+const F_EMPATE=[
+ "⚔️ {names} empatados na ponta com {p} pts. Só um sai vivo!",
+ "🤝 {names} dividindo o trono. Que comece a treta!",
+ "🔥 Empate técnico na liderança: {names}. Vai no detalhe!",
+ "🪢 {names} grudados no topo. Cabo de guerra pela liderança!",
+];
+const F_DISPAROU=[
+ "🏎️ {n} abriu {g} pts. Tá disputando outro campeonato.",
+ "🛫 {n} decolou: {g} de vantagem. Boa sorte pra alcançar.",
+ "😅 {n} disparou {g} na frente. Já era? Quaaase.",
+ "🦅 {n} sobrevoando o bolão com {g} pts de folga.",
+ "📡 {n} tão na frente que mandou cartão-postal: {g} pts de vantagem.",
+];
+const F_VICE=[
+ "🐆 {n} colado a {g} pt{gs} do líder. Respira no cangote!",
+ "👀 {n} de tocaia em 2º. Um tropeço lá na frente e já era.",
+ "😈 {n} espreitando a liderança a {g} pt{gs}. Tá quase.",
+ "🥈 {n} na cola — prata não, quer é o ouro.",
+ "🎯 {n} a {g} pt{gs} do topo. Mira no líder e dispara!",
+];
+const F_MEIO=[
+ "😐 {n} no meião, sem brilho nem vexame. O famoso 'tá ali'.",
+ "🦗 {n} quietinho no meio da tabela. Hora de arriscar!",
+ "🎯 {n} no pelotão atrás dos líderes. Falta pouco pra subir.",
+ "🚶 {n} no meio do caminho. Sobe ou desce, {n}?",
+ "🍞 {n} no recheio da tabela. Bora pra borda de cima!",
+];
+const F_LANTERNA=[
+ "🪑 {n} segurando a lanterna com {p} pts. Empresta um palpite bom aí.",
+ "🐢 {n} em último. De baixo a visão é tranquila, né?",
+ "🆘 {n} no fundo da tabela. Bora, ainda dá tempo (talvez).",
+ "💀 {n} no último lugar. O importante é participar… né?",
+ "🫠 {n} na rabeira. Os palpites foram no chute mesmo?",
+ "📉 {n} fechando o ranking. Reação ou vexame, você decide.",
+ "🧎 {n} lá embaixo, mas com torcida fiel (você mesmo).",
+ "🎈 {n} na lanterninha. Pelo menos ilumina o caminho dos outros.",
+];
+const F_TOP3=[
+ "🎢 Top 3 embolado: {a}, {b} e {c} numa briga de foice.",
+ "🍿 {a}, {b} e {c} separados por só {s} pts. Pega a pipoca.",
+ "🥵 {a}, {b} e {c} colados no pódio. Tá pegando fogo!",
+];
+const F_FALTAM=[
+ "⏳ Ainda faltam {r} jogo{rs} {onde} — tudo pode mudar!",
+ "🎲 {r} jogo{rs} {onde} pela frente. Nada decidido!",
+ "🔮 Faltam {r} jogo{rs} {onde}. Vira-viradas à vista!",
+];
+const F_EU_LIDER=[
+ "👑 E o líder é você! Segura o topo.",
+ "🥇 Você na ponta! Agora é não vacilar.",
+ "😎 Liderança é sua. Os outros que se virem.",
+ "🔥 Você no topo! Tá voando, hein.",
+];
+const F_EU=[
+ "💪 Você em {pos}º, a {d} pt{ds} do líder. Dá pra virar!",
+ "🎯 {pos}º lugar, {d} pt{ds} do topo. Bora subir!",
+ "🚀 De {pos}º pra cima é só caprichar nos palpites!",
+ "🧗 Você em {pos}º. Falta {d} pt{ds} pra encostar — sobe aí!",
+];
+function hsh(s){ s=String(s); let h=5381; for(let i=0;i<s.length;i++) h=((h*33)^s.charCodeAt(i))>>>0; return h; }
+const pick=(pool,seed)=>pool[hsh(seed)%pool.length];
+const fill=(t,v)=>t.replace(/\{(\w+)\}/g,(_,k)=>v[k]!=null?v[k]:"");
 function phaseStatus(fase){
   const gs=gamesArr().filter(g=> fase? g.fase===fase : true);
   const done=gs.filter(g=>g.ga!=null&&g.gb!=null).length;
@@ -369,24 +444,38 @@ function hypeData(view, arr){
   }
 
   const lines=[];
-  if(leaders.length>1)
-    lines.push(`🔥 Empate na liderança ${faseNome}! ${leaders.join(" e ")} dividem o topo com ${top.pts} pts. Quem desencanta primeiro?`);
-  else if(gap<=2)
-    lines.push(`👀 Liderança por um fio: ${top.p} está só ${gap} pt${gap>1?'s':''} à frente de ${second.p}. Um placar exato vira o jogo!`);
-  else if(gap<=5)
-    lines.push(`⚡ ${top.p} lidera, mas ${second.p} cola a ${gap} pts. Tá pegando fogo!`);
-  else if(gap>=12)
-    lines.push(`🚀 ${top.p} disparou: ${gap} pts de vantagem sobre ${second.p}. Alguém segura essa?`);
-  else
-    lines.push(`🏁 ${top.p} na ponta com ${top.pts} pts, ${gap} à frente de ${second.p}.`);
+  // "salt" do estado: muda quando a pontuação muda, dando variedade sem ficar trocando a cada render
+  const salt = top.pts + ":" + (second?second.pts:0) + ":" + arr.length;
+  const onde = view==='geral'?'até o fim da Copa':'nesta fase';
 
+  // 1) frase do LÍDER (empate / disparada / liderança normal)
+  if(leaders.length>1)
+    lines.push(fill(pick(F_EMPATE, salt+leaders.join()), {names:leaders.join(" e "), p:top.pts}));
+  else if(gap>=12)
+    lines.push(fill(pick(F_DISPAROU, top.p+salt), {n:top.p, g:gap, p:top.pts}));
+  else
+    lines.push(fill(pick(F_LIDER, top.p+salt), {n:top.p, p:top.pts}));
+
+  // 2) frase do VICE (perseguidor) — quando há líder único e a briga não é gigante
+  if(leaders.length===1 && second && gap<=9)
+    lines.push(fill(pick(F_VICE, second.p+salt), {n:second.p, g:gap, gs:gap>1?'s':''}));
+  else if(arr.length>=5){ // senão, provoca alguém do meio
+    const mid=arr[Math.floor(arr.length/2)];
+    if(mid && mid!==top) lines.push(fill(pick(F_MEIO, mid.p+salt), {n:mid.p}));
+  }
+
+  // 3) top 3 embolado (quando colado)
   if(third && spread3<=6 && leaders.length===1)
-    lines.push(`🎢 Top 3 coladinho: ${arr[0].p}, ${arr[1].p} e ${arr[2].p} separados por só ${spread3} pts.`);
-  if(st.remaining>0)
-    lines.push(`⏳ Ainda faltam ${st.remaining} jogo${st.remaining>1?'s':''} ${view==='geral'?'até o fim da Copa':'nesta fase'} — muita coisa pode mudar!`);
+    lines.push(fill(pick(F_TOP3, salt+spread3), {a:arr[0].p, b:arr[1].p, c:arr[2].p, s:spread3}));
+
+  // 4) LANTERNA
   const lanterna=arr[arr.length-1];
   if(arr.length>=4 && lanterna.pts<top.pts)
-    lines.push(`🪑 ${lanterna.p} fechando a tabela com ${lanterna.pts} — bora reagir!`);
+    lines.push(fill(pick(F_LANTERNA, lanterna.p+salt), {n:lanterna.p, p:lanterna.pts}));
+
+  // 5) jogos restantes
+  if(st.remaining>0)
+    lines.push(fill(pick(F_FALTAM, salt+st.remaining), {r:st.remaining, rs:st.remaining>1?'s':'', onde}));
 
   const titulo={grupos:"Fase de Grupos",eliminatoria:"Fase Eliminatória",geral:"Classificação Geral"}[view];
   return {type:"dispute", title:titulo, faseNome, lines};
@@ -404,9 +493,9 @@ function hypeHTML(view, arr){
   }
   const lines=d.lines.slice();
   if(me){ const mine=arr.find(o=>o.p===me);
-    if(mine){ const pos=arr.indexOf(mine)+1, dd=arr[0].pts-mine.pts;
-      lines.push(pos===1 ? `👑 E o líder ${d.faseNome} é você! Segura o topo.`
-                         : `💪 Você está em ${pos}º, a ${dd} pt${dd>1?'s':''} do líder. Dá pra virar!`);
+    if(mine){ const pos=arr.indexOf(mine)+1, dd=arr[0].pts-mine.pts, slt=pos+":"+dd;
+      lines.push(pos===1 ? fill(pick(F_EU_LIDER, me+slt), {})
+                         : fill(pick(F_EU, me+slt), {pos, d:dd, ds:dd>1?'s':''}));
     }
   }
   return `<div class="hype"><div class="hype-title">⚽ ${d.title} — a disputa</div>${lines.map(l=>`<div class="hl">${l}</div>`).join("")}</div>`;
