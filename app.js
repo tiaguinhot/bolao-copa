@@ -114,6 +114,25 @@ const SIGLA = {
 };
 const PARTS_SEED = ["Igor","Taci","Lucas","Isa","Bruno","Ivo","Ione","Murilo","Tiago","Greice"];
 const RESULTS_SEED = {1:[2,0],2:[2,1],3:[1,1],4:[4,1],5:[2,0],6:[1,1],7:[1,1],8:[0,1],9:[7,1],10:[2,2],11:[1,0],12:[5,1]};
+// Fase eliminatória — 16 avos de final (confrontos confirmados pela FIFA). IDs a partir de 101.
+const KO_GAMES = [
+ [101,"16 avos","África do Sul","Canadá","2026-06-28T16:00:00-03:00"],
+ [102,"16 avos","Brasil","Japão","2026-06-29T14:00:00-03:00"],
+ [103,"16 avos","Alemanha","Paraguai","2026-06-29T17:30:00-03:00"],
+ [104,"16 avos","Holanda","Marrocos","2026-06-29T22:00:00-03:00"],
+ [105,"16 avos","Costa do Marfim","Noruega","2026-06-30T14:00:00-03:00"],
+ [106,"16 avos","França","Suécia","2026-06-30T18:00:00-03:00"],
+ [107,"16 avos","México","Equador","2026-06-30T22:00:00-03:00"],
+ [108,"16 avos","Inglaterra","RD Congo","2026-07-01T13:00:00-03:00"],
+ [109,"16 avos","Bélgica","Senegal","2026-07-01T17:00:00-03:00"],
+ [110,"16 avos","Estados Unidos","Bósnia e Herzegovina","2026-07-01T21:00:00-03:00"],
+ [111,"16 avos","Espanha","Áustria","2026-07-02T16:00:00-03:00"],
+ [112,"16 avos","Croácia","Portugal","2026-07-02T20:00:00-03:00"],
+ [113,"16 avos","Suíça","Argélia","2026-07-03T00:00:00-03:00"],
+ [114,"16 avos","Austrália","Egito","2026-07-03T15:00:00-03:00"],
+ [115,"16 avos","Argentina","Cabo Verde","2026-07-03T19:00:00-03:00"],
+ [116,"16 avos","Colômbia","Gana","2026-07-03T22:30:00-03:00"],
+];
 const PALP_SEED = {
  2:{Igor:[2,2],Taci:[3,0],Lucas:[1,0],Isa:[2,1],Bruno:[3,1],Ivo:[1,0],Murilo:[2,1],Tiago:[1,1],Ione:[1,1]},
  3:{Isa:[3,0],Bruno:[0,0],Igor:[2,2],Lucas:[2,0],Taci:[4,0],Murilo:[2,0],Ivo:[1,2],Ione:[1,0],Tiago:[2,0]},
@@ -166,7 +185,8 @@ function pts(pc,pf,gc,gf){
 // Os dados fixos do jogo (times, horário, data/dia) vêm SEMPRE do código.
 // Do banco usamos apenas o resultado (ga/gb). Assim, corrigir um horário é só publicar o app.
 const LOCAL_GAMES = {};
-GAMES_SEED.forEach(([id,rod,casa,fora,kickoff])=>{ LOCAL_GAMES[id]={id,rod,casa,fora,kickoff,dia:bdiaOf(kickoff)}; });
+GAMES_SEED.forEach(([id,rod,casa,fora,kickoff])=>{ LOCAL_GAMES[id]={id,rod,casa,fora,kickoff,dia:bdiaOf(kickoff),fase:"grupos",rodLabel:"Fase de grupos"}; });
+KO_GAMES.forEach(([id,rodLabel,casa,fora,kickoff])=>{ LOCAL_GAMES[id]={id,rod:99,casa,fora,kickoff,dia:bdiaOf(kickoff),fase:"eliminatoria",rodLabel}; });
 const gamesArr = ()=>Object.values(LOCAL_GAMES)
   .map(g=>{ const r=STATE.games[g.id]||{}; return {...g, ga:(r.ga??null), gb:(r.gb??null)}; })
   .sort((a,b)=>new Date(a.kickoff)-new Date(b.kickoff)||a.id-b.id);
@@ -258,8 +278,11 @@ function gameCard(g){
       : `<span class="st-miss">não apostou</span>`;
     return `
      <div class="game locked compact" data-card="${g.id}">
-       <div class="cteams">${flagImg(g.casa,'fsm')} ${g.casa} <b>${hasRes?`${g.ga}×${g.gb}`:"–"}</b> ${g.fora} ${flagImg(g.fora,'fsm')}</div>
-       <div class="cmeta">${my?`<span class="myp">você: ${my.casa}×${my.fora}</span>`:""}${badge}</div>
+       ${g.fase==="eliminatoria"?`<div class="rodtag sm">⚔️ ${g.rodLabel}</div>`:""}
+       <div class="compactrow">
+         <div class="cteams">${flagImg(g.casa,'fsm')} ${g.casa} <b>${hasRes?`${g.ga}×${g.gb}`:"–"}</b> ${g.fora} ${flagImg(g.fora,'fsm')}</div>
+         <div class="cmeta">${my?`<span class="myp">você: ${my.casa}×${my.fora}</span>`:""}${badge}</div>
+       </div>
      </div>`;
   }
   const v=getVal(g.id);
@@ -269,6 +292,7 @@ function gameCard(g){
      : (my?`<span class="st-ok">✓ enviado (${my.casa}×${my.fora}) — pode alterar</span>`:`<span class="st-todo">toque − ou + e salve</span>`);
   return `
    <div class="game" data-card="${g.id}">
+     ${g.fase==="eliminatoria"?`<div class="rodtag">⚔️ ${g.rodLabel}</div>`:""}
      <div class="cd ${cd.cls}" id="cd_${g.id}">${cd.txt}${isMadrugada(g)?' · 🌙 madrugada':''}</div>
      <div class="steprow">
        <div class="stepcol">
@@ -297,30 +321,40 @@ function gameCard(g){
    </div>`;
 }
 
-function totals(){
+function totals(fase){   // fase: "grupos" | "eliminatoria" | undefined(=todas)
   const t={}; parts().forEach(p=>t[p]={pts:0,e:0,s:0,v:0,n:0});
-  gamesArr().forEach(g=>parts().forEach(p=>{
-    const my=palpiteOf(g.id,p); if(!my)return; t[p].n++;
-    if(g.ga!=null&&g.gb!=null){ const pt=pts(my.casa,my.fora,g.ga,g.gb);
-      t[p].pts+=pt; if(pt===10)t[p].e++; else if(pt===7)t[p].s++; else if(pt===5)t[p].v++; }
-  }));
+  gamesArr().forEach(g=>{
+    if(fase && g.fase!==fase) return;
+    parts().forEach(p=>{
+      const my=palpiteOf(g.id,p); if(!my)return; t[p].n++;
+      if(g.ga!=null&&g.gb!=null){ const pt=pts(my.casa,my.fora,g.ga,g.gb);
+        t[p].pts+=pt; if(pt===10)t[p].e++; else if(pt===7)t[p].s++; else if(pt===5)t[p].v++; }
+    });
+  });
   return t;
 }
+let boardView="geral";  // geral | grupos | eliminatoria
 function renderBoard(){
   const box=document.getElementById("boardList"); if(!box)return;
-  const t=totals();
-  const arr=parts().map(p=>({p,...t[p]})).sort((a,b)=>b.pts-a.pts||b.e-a.e||b.s-a.s);
+  const tg=totals("grupos"), te=totals("eliminatoria"), tt=totals();
+  const src = boardView==="grupos"?tg : boardView==="eliminatoria"?te : tt;
+  const arr=parts().map(p=>({p,...src[p], g:tg[p].pts, el:te[p].pts}))
+    .sort((a,b)=>b.pts-a.pts||b.e-a.e||b.s-a.s);
+  document.querySelectorAll(".segbtn").forEach(b=>b.classList.toggle("active",b.dataset.bv===boardView));
   box.innerHTML="";
   arr.forEach((o,i)=>{ const pos=i+1;
     const r=document.createElement("div"); r.className="row"+(pos<=3?" p"+pos:"")+(o.p===me?" meRow":"");
+    const brk = boardView==="geral"
+       ? `<div class="break">Grupos ${o.g} · Eliminatória ${o.el}</div>`
+       : `<div class="break">${o.e} exatos · ${o.s} saldo · ${o.v} venc</div>`;
     r.innerHTML=`<div class="pos">${pos}º</div>
-      <div><div class="who">${o.p}${o.p===me?' <span class="tag">você</span>':''}</div>
-      <div class="break">${o.e} exatos · ${o.s} saldo · ${o.v} venc</div></div>
+      <div><div class="who">${o.p}${o.p===me?' <span class="tag">você</span>':''}</div>${brk}</div>
       <div class="ptsBig">${o.pts}<small>pts</small></div>`;
     box.appendChild(r);
   });
   const top=arr[0];
-  document.getElementById("leaderline").textContent = top&&top.pts>0?`🏆 Líder: ${top.p} (${top.pts} pts)`:"Bom jogo!";
+  const nome={geral:"geral",grupos:"da fase de grupos",eliminatoria:"da fase eliminatória"}[boardView];
+  document.getElementById("leaderline").textContent = top&&top.pts>0?`🏆 Líder ${nome}: ${top.p} (${top.pts} pts)`:"Boa sorte!";
 }
 
 function renderConfer(){
@@ -342,7 +376,7 @@ function renderConfer(){
     });
     const faltaLine = faltam.length ? `<div class="cmiss-line">🚫 Sem aposta: ${faltam.join(", ")}</div>` : "";
     const card=document.createElement("div"); card.className="cgame";
-    card.innerHTML=`<div class="chead">${flagImg(g.casa,'fsm')} ${SIGLA[g.casa]||g.casa} <b class="cr">${hasRes?`${g.ga} × ${g.gb}`:"× a definir"}</b> ${SIGLA[g.fora]||g.fora} ${flagImg(g.fora,'fsm')}</div>
+    card.innerHTML=`${g.fase==="eliminatoria"?`<div class="rodtag sm">⚔️ ${g.rodLabel}</div>`:""}<div class="chead">${flagImg(g.casa,'fsm')} ${SIGLA[g.casa]||g.casa} <b class="cr">${hasRes?`${g.ga} × ${g.gb}`:"× a definir"}</b> ${SIGLA[g.fora]||g.fora} ${flagImg(g.fora,'fsm')}</div>
       <div class="chips">${chips}</div>${faltaLine}`;
     box.appendChild(card);
   });
@@ -431,10 +465,9 @@ async function saveResult(gid){
   await setDoc(doc(db,"games",String(gid)),{ga:Number.isFinite(c)?c:null,gb:Number.isFinite(f)?f:null},{merge:true});
 }
 async function seedData(){
-  if(!confirm("Gravar 72 jogos, participantes e os palpites/resultados já existentes?"))return;
+  if(!confirm("Gravar participantes, palpites iniciais e os resultados já conhecidos? (não apaga nada que você já lançou)"))return;
   const b=writeBatch(db);
-  GAMES_SEED.forEach(([id,rod,casa,fora,kickoff])=>{ const r=RESULTS_SEED[id];
-    b.set(doc(db,"games",String(id)),{id,rod,casa,fora,kickoff,dia:bdiaOf(kickoff),ga:r?r[0]:null,gb:r?r[1]:null},{merge:true}); });
+  Object.entries(RESULTS_SEED).forEach(([id,r])=> b.set(doc(db,"games",String(id)),{ga:r[0],gb:r[1]},{merge:true}));
   b.set(doc(db,"config","bolao"),{participants:PARTS_SEED,scoring:SCORING},{merge:true});
   Object.entries(PALP_SEED).forEach(([gid,o])=>Object.entries(o).forEach(([n,v])=>
     b.set(doc(db,"palpites",`${gid}__${n}`),{gameId:+gid,name:n,casa:v[0],fora:v[1]},{merge:true})));
@@ -462,16 +495,22 @@ function shareMyDay(k){
   share(lines.join("\n"));
 }
 function shareResults(){
-  const ps=parts(), t=totals();
+  const ps=parts();
+  const t = boardView==="grupos"?totals("grupos") : boardView==="eliminatoria"?totals("eliminatoria") : totals();
+  const tg=totals("grupos"), te=totals("eliminatoria");
   const done=gamesArr().filter(g=>g.ga!=null&&g.gb!=null);
-  // pega o último dia com resultado
   const lastKey=done.length?blockKey(done[done.length-1]):null;
   const dayGames=done.filter(g=>blockKey(g)===lastKey);
-  let lines=[`📊 Resultados — ${dayGames.length?blockLabel(dayGames[0]):"Copa 2026"}`,""];
-  dayGames.forEach(g=>lines.push(`${FLAG[g.casa]||""} ${g.casa} ${g.ga} × ${g.gb} ${g.fora} ${FLAG[g.fora]||""}`));
-  const arr=ps.map(p=>({p,pts:t[p].pts,e:t[p].e,s:t[p].s})).sort((a,b)=>b.pts-a.pts||b.e-a.e||b.s-a.s);
-  lines.push("","🏆 Classificação geral:");
-  arr.forEach((o,i)=>lines.push(`${i+1}º ${o.p} — ${o.pts} pts`));
+  const nome={geral:"GERAL",grupos:"FASE DE GRUPOS",eliminatoria:"FASE ELIMINATÓRIA"}[boardView];
+  let lines=[];
+  if(dayGames.length){ lines.push(`📊 Resultados — ${blockLabel(dayGames[0])}`,"");
+    dayGames.forEach(g=>lines.push(`${FLAG[g.casa]||""} ${g.casa} ${g.ga} × ${g.gb} ${g.fora} ${FLAG[g.fora]||""}`)); lines.push(""); }
+  lines.push(`🏆 Classificação — ${nome}:`);
+  const arr=ps.map(p=>({p,pts:t[p].pts,e:t[p].e,s:t[p].s,g:tg[p].pts,el:te[p].pts}))
+    .sort((a,b)=>b.pts-a.pts||b.e-a.e||b.s-a.s);
+  arr.forEach((o,i)=>lines.push(boardView==="geral"
+    ? `${i+1}º ${o.p} — ${o.pts} pts (G ${o.g} · E ${o.el})`
+    : `${i+1}º ${o.p} — ${o.pts} pts`));
   share(lines.join("\n"));
 }
 
@@ -502,6 +541,7 @@ document.getElementById("blocks").addEventListener("click",e=>{
   const sh=e.target.closest("[data-share]"); if(sh){ shareMyDay(sh.dataset.share); return; }
 });
 document.getElementById("shareResults").onclick=shareResults;
+document.querySelectorAll(".segbtn").forEach(b=>b.onclick=()=>{ boardView=b.dataset.bv; renderBoard(); });
 document.getElementById("adminUnlock").onclick=()=>{
   if(document.getElementById("adminCode").value===ADMIN_CODE){
     isAdmin=true; document.getElementById("adminPanel").style.display="block";
